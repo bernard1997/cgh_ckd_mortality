@@ -29,23 +29,23 @@ if model_choice == "Random Forest Model":
     with col1:
         st.header("Conditions")
         atrial_fibrillation = st.checkbox("Atrial Fibrillation")
+        cva = st.checkbox("Cerebrovascular Accident (CVA)") 
+        heart_failure = st.checkbox('Chronic Heart Failure')
+        dementia = st.checkbox("Dementia")
         mi_nstemi = st.checkbox("Myocardial Infraction")
         pvd = st.checkbox("Peripheral Vascular Disease (PVD)")
-        cva = st.checkbox("Cerebrovascular Accident (CVA)")
-        dementia = st.checkbox("Dementia")
-        heart_failure = st.checkbox('Heart Failure')
 
     # Section 2: Age & Laboratory Data
     with col2:
         st.header("Lab Data")
 
-        # eGFR level
-        egfr = st.number_input("eGFR (mL/min/1.73m²)", min_value=0.0, step=0.1, format="%.2f")
-        egfr_15_abv = int(egfr >= 15)
-        
         # Albumin level
         albumin = st.number_input("Albumin (g/L)", min_value=0.0, step=0.1, format="%.2f")
         albumin_35_abv = int(albumin >= 35)
+
+        # eGFR level
+        egfr = st.number_input("eGFR (mL/min/1.73m²)", min_value=0.0, step=0.1, format="%.2f")
+        egfr_15_abv = int(egfr >= 15)
         
         # Hemoglobin level
         haemoglobin = st.number_input("Hemoglobin (g/dL)", min_value=0.0, step=0.1, format="%.2f")
@@ -58,6 +58,8 @@ if model_choice == "Random Forest Model":
     # Section 3: Renal Function & Comorbidity Index
     with col3:
         st.header("Others")
+        
+        adl_dependent = st.checkbox("ADL Dependent")
 
         # Age categories
         age = st.number_input("Age", min_value=0, step=1)
@@ -68,7 +70,6 @@ if model_choice == "Random Forest Model":
         cci = st.number_input("Charlson Comorbidity Index (CCI)", min_value=0, step=1)
         cci_abv_5 = int(cci > 5)
 
-        adl_dependent = st.checkbox("ADL Dependent")
 
 
 
