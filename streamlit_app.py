@@ -1,18 +1,19 @@
 import streamlit as st
+import joblib
 import pandas as pd
-'''
+
 # Load the model
 @st.cache_resource
 def load_nrf_cat_model():
-    return joblib.load("category_nrf_isotonic_13 features_6 ds_model.joblib")
+    return joblib.load("./static/cat_nrf_model.joblib")
 
 @st.cache_resource
 def load_nrf_cont_model():
-    return joblib.load("continous_nrf_sigmoid_11 features_3 ds_model.joblib")
+    return joblib.load("./static/cont_nrf_model.joblib")
 
 nrf_cat_model = load_nrf_cat_model()
 nrf_cont_model = load_nrf_cont_model()
-'''
+
 # Sidebar for Model Selection
 st.sidebar.title("Model Selection")
 model_choice = st.sidebar.selectbox("Choose a model", ["Random Forest Model", "Logistic Regression Model"])
@@ -28,11 +29,10 @@ if model_choice == "Random Forest Model":
     with col1:
         st.header("Conditions")
         atrial_fibrillation = st.checkbox("Atrial Fibrillation")
-        mi_nstemi = st.checkbox("MI or NSTEMI")
+        mi_nstemi = st.checkbox("Myocardial Infraction")
         pvd = st.checkbox("Peripheral Vascular Disease (PVD)")
         cva = st.checkbox("Cerebrovascular Accident (CVA)")
         dementia = st.checkbox("Dementia")
-        adl_dependent = st.checkbox("ADL Dependent")
         heart_failure = st.checkbox('Heart Failure')
 
     # Section 2: Age & Laboratory Data
@@ -61,12 +61,14 @@ if model_choice == "Random Forest Model":
 
         # Age categories
         age = st.number_input("Age", min_value=0, step=1)
-        age_76_80 = int(76 <= age <= 80)
-        age_85_abv = int(age >= 85)
+        age_75_79 = int(75 <= age <= 79)
+        age_80_84 = int(80 <= age <= 84)
 
         # CCI score
         cci = st.number_input("Charlson Comorbidity Index (CCI)", min_value=0, step=1)
         cci_abv_5 = int(cci > 5)
+
+        adl_dependent = st.checkbox("ADL Dependent")
 
 
 
@@ -86,8 +88,8 @@ with center_col:
             'CVA': int(cva),    
             'Dementia': int(dementia),
             'ADL Dependent': int(adl_dependent),
-            'age_76-80': age_76_80,
-            'age_85 abv': age_85_abv,
+            'age_76-80': age_75_79,
+            'age_85 abv': age_80_84,
             'albumin_35 abv': albumin_35_abv,
             'Haemoglobin >= 10': haemoglobin_10_abv,
             'Phosphate Inorganic, serum >= 1.6': phosphate_1_6_abv,
@@ -116,10 +118,9 @@ with center_col:
         if model_choice == "Random Forest Model":
             # Insert model-specific logic for Random Forest here
             # Make prediction
-            # prob_categorized = nrf_cat_model.predict_proba(input_categorical_df)[0, 1]
-            # prob_continuous = nrf_cont_model.predict_proba(input_continuous_df)[0, 1]
-            prob_categorized = 0
-            prob_continuous = 0
+            prob_categorized = nrf_cat_model.predict_proba(input_categorical_df)[0, 1]
+            prob_continuous = nrf_cont_model.predict_proba(input_continuous_df)[0, 1]
+
             # Create output table with centered alignment
             results_df = pd.DataFrame(
                 {
