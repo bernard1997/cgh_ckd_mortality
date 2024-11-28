@@ -1,6 +1,7 @@
 import streamlit as st
 import joblib
 import pandas as pd
+from static.helper import continuous_log_reg_coefficients 
 
 # Load the model
 @st.cache_resource
@@ -70,7 +71,68 @@ if model_choice == "Random Forest Model":
         cci = st.number_input("Charlson Comorbidity Index (CCI)", min_value=0, step=1)
         cci_abv_5 = int(cci > 5)
 
+elif model_choice == "Logistic Regression Model":
+    # Create three columns for the sections
+    col1, spacer1, col2, spacer2, col3 = st.columns([2, 0.5, 2, 0.5, 2])
 
+    # Section 1: Medical Conditions (Categorical/Binary Features)
+    with col1:
+        st.header("Conditions")
+        atrial_fibrillation = st.checkbox("Atrial Fibrillation")
+        cva = st.checkbox("Cerebrovascular Accident (CVA)") 
+        heart_failure = st.checkbox('Chronic Heart Failure')
+        dementia = st.checkbox("Dementia")
+        liverdisease = st.checkbox('Liver Disease')
+        mi_nstemi = st.checkbox("Myocardial Infraction")
+        pvd = st.checkbox("Peripheral Vascular Disease (PVD)")
+
+    # Section 2: Age & Laboratory Data
+    with col2:
+        st.header("Lab Data")
+
+        # Albumin level
+        albumin = st.number_input("Albumin (g/L)", min_value=0.0, step=0.1, format="%.2f")
+        albumin_35_abv = int(albumin >= 35)
+
+        # calcium level
+        calcium = st.number_input("Calcium (mmol/L)", min_value=0.0, step=0.1, format="%.2f")
+
+        # eGFR level
+        egfr = st.number_input("eGFR (mL/min/1.73m²)", min_value=0.0, step=0.1, format="%.2f")
+        egfr_15_abv = int(egfr >= 15)
+        
+        # Hemoglobin level
+        haemoglobin = st.number_input("Hemoglobin (g/dL)", min_value=0.0, step=0.1, format="%.2f")
+        haemoglobin_10_abv = int(haemoglobin >= 10)
+        
+        # Phosphate Inorganic level
+        phosphate = st.number_input("Phosphate Inorganic, serum (mmol/L)", min_value=0.0, step=0.1, format="%.2f")
+        phosphate_1_6_abv = int(phosphate >= 1.6)
+
+
+    # Section 3: Renal Function & Comorbidity Index
+    with col3:
+        st.header("Others")
+        
+        adl_dependent = st.checkbox("ADL Dependent")
+
+        # Age categories
+        age = st.number_input("Age", min_value=0, step=1)
+        age_75_79 = int(75 <= age <= 79)
+        age_80_84 = int(80 <= age <= 84)
+
+        # CCI score
+        cci = st.number_input("Charlson Comorbidity Index (CCI)", min_value=0, step=1)
+        cci_abv_5 = int(cci > 5)
+
+        # CRRT given
+        crrt = st.checkbox('CRRT Given')
+
+        # race
+        race = st.selectbox("Race", ["Indian", "Chinese", "Malay", "Others"])
+        raceIndian = race == 'Indian'
+        raceMalay = race == 'Malay'
+        raceOthers = race == 'Others'
 
 
 _, center_col, _ = st.columns([1, 1, 1])  # Adjust widths if needed
