@@ -239,7 +239,6 @@ with center_col:
             # Insert model-specific logic for Logistic Regression here
 
             prob_continuous = 1 / (1 + np.exp(-np.dot(lr_input_continuous_df.iloc[0], list(continuous_log_reg_coefficients.values()))))
-            prob_continuous *= 100
 
             # Display results in the placeholder
             output_placeholder.success(
