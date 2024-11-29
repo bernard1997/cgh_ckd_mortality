@@ -1,4 +1,4 @@
-# 🎈 Blank app template
+# 🎈 Renal Mortality Prediction
 
 A simple Streamlit app template for you to modify!
 

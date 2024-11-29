@@ -1,6 +1,7 @@
 import streamlit as st
 import joblib
 import pandas as pd
+import numpy as np
 from static.helper import continuous_log_reg_coefficients 
 
 # Load the model
@@ -92,6 +93,9 @@ elif model_choice == "Logistic Regression Model":
 
         # Albumin level
         albumin = st.number_input("Albumin (g/L)", min_value=0.0, step=0.1, format="%.2f")
+        albumin_24_less = int(albumin <= 24)
+        albumin_25_29 = int(25 <= albumin <= 29)
+        albumin_30_34 = int(30 <= albumin <= 34)
         albumin_35_abv = int(albumin >= 35)
 
         # calcium level
@@ -99,6 +103,7 @@ elif model_choice == "Logistic Regression Model":
 
         # eGFR level
         egfr = st.number_input("eGFR (mL/min/1.73m²)", min_value=0.0, step=0.1, format="%.2f")
+        egfr_10_14 = int(10 <= egfr <= 14)
         egfr_15_abv = int(egfr >= 15)
         
         # Hemoglobin level
@@ -118,21 +123,28 @@ elif model_choice == "Logistic Regression Model":
 
         # Age categories
         age = st.number_input("Age", min_value=0, step=1)
+        age_65_69 = int(65 <= age <= 69)
+        age_70_74 = int(70 <= age <= 74)
         age_75_79 = int(75 <= age <= 79)
         age_80_84 = int(80 <= age <= 84)
 
         # CCI score
         cci = st.number_input("Charlson Comorbidity Index (CCI)", min_value=0, step=1)
+        cci_3_4 = int(3 <= cci <= 4)
         cci_abv_5 = int(cci > 5)
 
         # CRRT given
         crrt = st.checkbox('CRRT Given')
 
+        # Gender
+        gender = st.selectbox("Gender", ["Male", "Female"])
+        male = int(gender == 'Male')
+
         # race
-        race = st.selectbox("Race", ["Indian", "Chinese", "Malay", "Others"])
-        raceIndian = race == 'Indian'
-        raceMalay = race == 'Malay'
-        raceOthers = race == 'Others'
+        race = st.selectbox("Race", ["Chinese","Indian", "Malay", "Others"])
+        raceIndian = int(race == 'Indian')
+        raceMalay = int(race == 'Malay')
+        raceOthers = int(race == 'Others')
 
 
 _, center_col, _ = st.columns([1, 1, 1])  # Adjust widths if needed
@@ -160,7 +172,7 @@ with center_col:
             'cci_abv 5': cci_abv_5
         }
 
-        input_categorical_df = pd.DataFrame([input_data_categorical])
+        rf_input_categorical_df = pd.DataFrame([input_data_categorical])
 
         input_data_continuous = {
             'Age' : age,
@@ -176,21 +188,40 @@ with center_col:
             'cci' : cci
         }
 
-        input_continuous_df = pd.DataFrame([input_data_continuous])
+        rf_input_continuous_df = pd.DataFrame([input_data_continuous])
+
+
+        lr_input_continuous = {
+            "Intercept": 1,  # Always included
+            "ADL.dependent": int(adl_dependent),
+            "AF": int(atrial_fibrillation),
+            "age": age,
+            "albumin": albumin,
+            "calcium.total.serum": calcium,
+            "CCI": cci,
+            "CHF.merge": int(heart_failure),
+            "CRRT.given": int(crrt),
+            "CVA": int(cva),
+            "dementia": int(dementia),
+            "eGFR": egfr,
+            "haemoglobin": haemoglobin,
+            "liver.disease": int(liverdisease),
+            "MI.NSTEMI": int(mi_nstemi),
+            "phosphate.inorganic.serum": phosphate,
+            "PVD": int(pvd),
+            "raceIndian": raceIndian,
+            "raceMalay": raceMalay,
+            "raceOthers": raceOthers,
+        }
+
+        lr_input_continuous_df = pd.DataFrame([lr_input_continuous])
+
 
         if model_choice == "Random Forest Model":
             # Insert model-specific logic for Random Forest here
             # Make prediction
-            prob_categorized = nrf_cat_model.predict_proba(input_categorical_df)[0, 1]
-            prob_continuous = nrf_cont_model.predict_proba(input_continuous_df)[0, 1]
-
-            # Create output table with centered alignment
-            results_df = pd.DataFrame(
-                {
-                    "Model Based on Categorized Values": [f"{prob_categorized:.2%}"],
-                    "Model Based on Continuous Values": [f"{prob_continuous:.2%}"]
-                }
-            )
+            prob_categorized = nrf_cat_model.predict_proba(rf_input_categorical_df)[0, 1]
+            prob_continuous = nrf_cont_model.predict_proba(rf_input_continuous_df)[0, 1]
 
              # Display results in the placeholder
             output_placeholder.success(
@@ -206,5 +237,17 @@ with center_col:
 
         elif model_choice == "Logistic Regression Model":
             # Insert model-specific logic for Logistic Regression here
-            st.success(f"Data submitted to Logistic Regression Model: NOT CODED")
-            # Example: prediction = logistic_regression_model.predict(input_data)
+
+            prob_continuous = 1 / (1 + np.exp(-np.dot(lr_input_continuous_df.iloc[0], list(continuous_log_reg_coefficients.values()))))
+
+            # Display results in the placeholder
+            output_placeholder.success(
+                f"""
+                #### Predicted Probability:
+                
+                - **Model based on categorized values**: not coded yet
+                - **Model based on continuous values**: {prob_continuous:.2%}
+                """
+            )
+            #{prob_categorized:.2%}
+

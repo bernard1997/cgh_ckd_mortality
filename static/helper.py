@@ -22,3 +22,4 @@ continuous_log_reg_coefficients = {
     "raceMalay": 0.194981343,
     "raceOthers": -0.136938792,
 }
+
