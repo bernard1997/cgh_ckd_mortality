@@ -155,75 +155,50 @@ with center_col:
 # Display model-specific options or calculations after submission
 # Submit button
     if st.button("Submit Data"):
-        # Prepare the input data for the model as a dictionary
-        input_data_categorical = {
-            'Atrial fibrillation': int(atrial_fibrillation),
-            'MI or NSTEMI': int(mi_nstemi),
-            'PVD': int(pvd),
-            'CVA': int(cva),    
-            'Dementia': int(dementia),
-            'ADL Dependent': int(adl_dependent),
-            'age_75-79': age_75_79,
-            'age_80-84': age_80_84,
-            'albumin_35 abv': albumin_35_abv,
-            'Haemoglobin >= 10': haemoglobin_10_abv,
-            'Phosphate Inorganic, serum >= 1.6': phosphate_1_6_abv,
-            'eGFR (CKD-EPI)_15 abv': egfr_15_abv,
-            'cci_abv 5': cci_abv_5
-        }
-
-        rf_input_categorical_df = pd.DataFrame([input_data_categorical])
-
-        input_data_continuous = {
-            'Age' : age,
-            'Atrial fibrillation': int(atrial_fibrillation),
-            'MI or NSTEMI': int(mi_nstemi),
-            'CVA': int(cva),    
-            'Chronic Heart Failure (merged)' : int(heart_failure),
-            'Albumin, serum' : albumin,
-            'Haemoglobin' : haemoglobin,
-            'Phosphate Inorganic, serum' : phosphate,
-            'eGFR (CKD-EPI)': egfr,
-            'ADL Dependent' : int(adl_dependent),
-            'cci' : cci
-        }
-
-        rf_input_continuous_df = pd.DataFrame([input_data_continuous])
-
-
-        lr_input_continuous = {
-            "Intercept": 1,  # Always included
-            "ADL.dependent": int(adl_dependent),
-            "AF": int(atrial_fibrillation),
-            "age": age,
-            "albumin": albumin,
-            "calcium.total.serum": calcium,
-            "CCI": cci,
-            "CHF.merge": int(heart_failure),
-            "CRRT.given": int(crrt),
-            "CVA": int(cva),
-            "dementia": int(dementia),
-            "eGFR": egfr,
-            "haemoglobin": haemoglobin,
-            "liver.disease": int(liverdisease),
-            "MI.NSTEMI": int(mi_nstemi),
-            "phosphate.inorganic.serum": phosphate,
-            "PVD": int(pvd),
-            "raceIndian": raceIndian,
-            "raceMalay": raceMalay,
-            "raceOthers": raceOthers,
-        }
-
-        lr_input_continuous_df = pd.DataFrame([lr_input_continuous])
-
 
         if model_choice == "Random Forest Model":
+
+            # Prepare the input data for the model as a dictionary
+            input_data_categorical = {
+                'Atrial fibrillation': int(atrial_fibrillation),
+                'MI or NSTEMI': int(mi_nstemi),
+                'PVD': int(pvd),
+                'CVA': int(cva),    
+                'Dementia': int(dementia),
+                'ADL Dependent': int(adl_dependent),
+                'age_75-79': age_75_79,
+                'age_80-84': age_80_84,
+                'albumin_35 abv': albumin_35_abv,
+                'Haemoglobin >= 10': haemoglobin_10_abv,
+                'Phosphate Inorganic, serum >= 1.6': phosphate_1_6_abv,
+                'eGFR (CKD-EPI)_15 abv': egfr_15_abv,
+                'cci_abv 5': cci_abv_5
+            }
+
+            rf_input_categorical_df = pd.DataFrame([input_data_categorical])
+
+            input_data_continuous = {
+                'Age' : age,
+                'Atrial fibrillation': int(atrial_fibrillation),
+                'MI or NSTEMI': int(mi_nstemi),
+                'CVA': int(cva),    
+                'Chronic Heart Failure (merged)' : int(heart_failure),
+                'Albumin, serum' : albumin,
+                'Haemoglobin' : haemoglobin,
+                'Phosphate Inorganic, serum' : phosphate,
+                'eGFR (CKD-EPI)': egfr,
+                'ADL Dependent' : int(adl_dependent),
+                'cci' : cci
+            }
+
+            rf_input_continuous_df = pd.DataFrame([input_data_continuous])
+
             # Insert model-specific logic for Random Forest here
             # Make prediction
             prob_categorized = nrf_cat_model.predict_proba(rf_input_categorical_df)[0, 1]
             prob_continuous = nrf_cont_model.predict_proba(rf_input_continuous_df)[0, 1]
 
-             # Display results in the placeholder
+            # Display results in the placeholder
             output_placeholder.success(
                 f"""
                 #### Predicted Probability:
@@ -236,6 +211,31 @@ with center_col:
             # Example: prediction = random_forest_model.predict(input_data)
 
         elif model_choice == "Logistic Regression Model":
+            lr_input_continuous = {
+                "Intercept": 1,  # Always included
+                "ADL.dependent": int(adl_dependent),
+                "AF": int(atrial_fibrillation),
+                "age": age,
+                "albumin": albumin,
+                "calcium.total.serum": calcium,
+                "CCI": cci,
+                "CHF.merge": int(heart_failure),
+                "CRRT.given": int(crrt),
+                "CVA": int(cva),
+                "dementia": int(dementia),
+                "eGFR": egfr,
+                "haemoglobin": haemoglobin,
+                "liver.disease": int(liverdisease),
+                "MI.NSTEMI": int(mi_nstemi),
+                "phosphate.inorganic.serum": phosphate,
+                "PVD": int(pvd),
+                "raceIndian": raceIndian,
+                "raceMalay": raceMalay,
+                "raceOthers": raceOthers,
+            }
+
+            lr_input_continuous_df = pd.DataFrame([lr_input_continuous])
+
             # Insert model-specific logic for Logistic Regression here
 
             prob_continuous = 1 / (1 + np.exp(-np.dot(lr_input_continuous_df.iloc[0], list(continuous_log_reg_coefficients.values()))))
