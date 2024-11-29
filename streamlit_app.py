@@ -2,7 +2,7 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
-from static.helper import continuous_log_reg_coefficients 
+from static.helper import continuous_log_reg_coefficients, categorical_log_reg_coefficients 
 
 # Load the model
 @st.cache_resource
@@ -93,7 +93,6 @@ elif model_choice == "Logistic Regression Model":
 
         # Albumin level
         albumin = st.number_input("Albumin (g/L)", min_value=0.0, step=0.1, format="%.2f")
-        albumin_24_less = int(albumin <= 24)
         albumin_25_29 = int(25 <= albumin <= 29)
         albumin_30_34 = int(30 <= albumin <= 34)
         albumin_35_abv = int(albumin >= 35)
@@ -123,7 +122,7 @@ elif model_choice == "Logistic Regression Model":
 
         # Age categories
         age = st.number_input("Age", min_value=0, step=1)
-        age_65_69 = int(65 <= age <= 69)
+        age_abv_85 = int(age >= 85)
         age_70_74 = int(70 <= age <= 74)
         age_75_79 = int(75 <= age <= 79)
         age_80_84 = int(80 <= age <= 84)
@@ -236,18 +235,46 @@ with center_col:
 
             lr_input_continuous_df = pd.DataFrame([lr_input_continuous])
 
+            lr_input_categorical = {
+                "Intercept": 1,  # Always included
+                "ADL.dependentTRUE": int(adl_dependent),
+                "age70_74": age_70_74,
+                "age75_79": age_75_79,
+                "age80_84": age_80_84,
+                "age_abv_85": age_abv_85,
+                "albumin25_29": albumin_25_29,
+                "albumin30_34": albumin_30_34,
+                "albumin_35_abv": albumin_35_abv,
+                "CCI3_4": cci_3_4,
+                "CCI_abv_5": cci_abv_5,
+                "CRRT.givenTRUE": int(crrt),
+                "CVATRUE": int(cva),
+                "dementiaTRUE": int(dementia),
+                "eGFR10_14": egfr_10_14,
+                "eGFR_15_abv": egfr_15_abv,
+                "liver.diseaseTRUE": int(liverdisease),
+                "MI.NSTEMITRUE": int(mi_nstemi),
+                "phosphate.inorganic.serumTRUE": phosphate_1_6_abv,
+                "PVDTRUE": int(pvd),
+                "sexMALE": male
+            }
+
+            lr_input_categorical_df = pd.DataFrame([lr_input_categorical])
+
+
             # Insert model-specific logic for Logistic Regression here
 
             prob_continuous = 1 / (1 + np.exp(-np.dot(lr_input_continuous_df.iloc[0], list(continuous_log_reg_coefficients.values()))))
+            prob_categorized = 1 / (1 + np.exp(-np.dot(lr_input_categorical_df.iloc[0], list(categorical_log_reg_coefficients.values()))))
+
 
             # Display results in the placeholder
             output_placeholder.success(
                 f"""
                 #### Predicted Probability:
                 
-                - **Model based on categorized values**: not coded yet
+                - **Model based on categorized values**: {prob_categorized:.2%}
                 - **Model based on continuous values**: {prob_continuous:.2%}
                 """
             )
-            #{prob_categorized:.2%}
 
